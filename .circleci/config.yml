@@ -30,8 +30,8 @@ jobs:
           working_directory: /workspaces
       - save_cache:
           key: venv-deps-{{ .Branch }}-{{ checksum "function/Pipfile.lock"}}
-          paths: 
-            - /workspaces/package
+          paths:
+            - package
   deploy:
     executor: aws-cli/default
     steps:
