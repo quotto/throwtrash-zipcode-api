@@ -34,6 +34,7 @@ jobs:
             - package
   deploy:
     executor: aws-cli/default
+    working_directory: /workspaces
     steps:
       - checkout
       - restore_cache:
