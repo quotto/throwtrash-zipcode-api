@@ -1,0 +1,59 @@
+version: 2.1
+orbs:
+  aws-cli: circleci/aws-cli@2.0.2
+jobs:
+  build:
+    docker:
+      - image: quo1987/throwtrash-zipcode-api:0.0.1
+        auth:
+          username: quo1987
+          password: $DOCKER_HUB_PASSWORD
+    working_directory: /workspaces
+    environment:
+      # このアプリのテストリージョン
+      AWS_DEFAULT_REGION: ap-northeast-1
+    steps:
+      - checkout
+      - restore_cache:
+          key: venv-deps-{{ .Branch }}-{{ checksum "function/Pipfile.lock"}}
+      - run:
+          name: install package
+          command: ./build/layer.sh
+      - run:
+          name: test
+          command: |
+            if [ "${CIRCLE_BRANCH}" != "main" ]; then
+              STAGE="dev"
+            fi
+            export PYTHONPATH=${CIRCLE_WORKING_DIRECTORY}/package
+            python -m unittest discover tests
+          working_directory: /workspaces
+      - save_cache:
+          key: venv-deps-{{ .Branch }}-{{ checksum "function/Pipfile.lock"}}
+          paths: 
+            - /workspaces/package
+  deploy:
+    executor: aws-cli/default
+    steps:
+      - checkout
+      - restore_cache:
+          key: venv-deps-{{ .Branch }}-{{ checksum "function/Pipfile.lock"}}
+      - aws-cli/install
+      - deploy:
+          # restore_cacheでLayerにデプロイするライブラリは復元されているため
+          # ./build/layer.shは実行不要
+          command: ./build/deploy.sh
+workflows:
+  build:
+    jobs:
+      - build:
+          context: aws-test
+      - deploy:
+          context: aws-deploy
+          requires:
+            - build
+          filters:
+            branches:
+              only:
+                - main
+                - develop
