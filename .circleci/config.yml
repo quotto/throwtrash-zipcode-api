@@ -31,13 +31,17 @@ jobs:
           key: package-deps-{{ .Branch }}-{{ checksum "function/Pipfile.lock"}}
           paths:
             - package
+      - persist_to_workspace:
+          root: .
+          paths:
+            - package
   deploy:
     executor: aws-cli/default
     working_directory: ~/workspaces
     steps:
       - checkout
-      - restore_cache:
-          key: package-deps-{{ .Branch }}-{{ checksum "function/Pipfile.lock"}}
+      - attach_workspace:
+          at: .
       - aws-cli/install
       - deploy:
           # restore_cacheでLayerにデプロイするライブラリは復元されているため
