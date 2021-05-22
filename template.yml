@@ -1,0 +1,31 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: throwtrash zipcode api
+Resources:
+  function:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: handler.handler
+      Runtime: python3.8
+      CodeUri: function/.
+      Description: throwtrash zipcode api library
+      Timeout: 10
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AWSLambda_ReadOnlyAccess
+        - AWSXrayWriteOnlyAccess
+        - AmazonDynamoDBReadOnlyAccess
+      Tracing: Active
+      Layers:
+        - !Ref libs
+      Environment:
+        Variables:
+          STAGE: 'dev'
+  libs:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: throwtrash-zipcode-lib
+      Description: throwtrash zipcode api library
+      ContentUri: package/.
+      CompatibleRuntimes:
+        - python3.8
