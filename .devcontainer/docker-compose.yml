@@ -1,0 +1,16 @@
+
+version: "3"
+services:
+    zipcode:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        volumes:
+            - ../:/workspaces:cached
+            - ~/.aws:/root/.aws
+            - /workspaces/package
+            - /workspaces/function/.venv
+        ports:
+            - 8888:8888
+            - 8000:8000
+        command: /bin/sh -c "while sleep 1000; do :; done"
