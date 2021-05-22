@@ -8,7 +8,7 @@ jobs:
         auth:
           username: quo1987
           password: $DOCKER_HUB_PASSWORD
-    working_directory: /workspaces
+    working_directory: ~/workspaces
     environment:
       # このアプリのテストリージョン
       AWS_DEFAULT_REGION: ap-northeast-1
@@ -25,16 +25,15 @@ jobs:
             if [ "${CIRCLE_BRANCH}" != "main" ]; then
               STAGE="dev"
             fi
-            export PYTHONPATH=${CIRCLE_WORKING_DIRECTORY}/package
+            export PYTHONPATH=./package
             python -m unittest discover tests
-          working_directory: /workspaces
       - save_cache:
           key: package-deps-{{ .Branch }}-{{ checksum "function/Pipfile.lock"}}
           paths:
             - package
   deploy:
     executor: aws-cli/default
-    working_directory: /workspaces
+    working_directory: ~/workspaces
     steps:
       - checkout
       - restore_cache:
